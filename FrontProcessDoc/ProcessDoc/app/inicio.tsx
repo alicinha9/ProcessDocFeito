@@ -12,97 +12,73 @@ import { useRouter } from "expo-router";
 export default function InicioScreen() {
   const router = useRouter();
 
+  // Dados dos cards para facilitar a manutenção e escalabilidade
+  const cardData = [
+    {
+      title: "Documentos",
+      icon: require("../assets/doc.png"),
+      actions: [
+        { label: "Visualizar", onPress: () => alert("Visualizar documentos") },
+        { label: "Cadastrar", onPress: () => router.push("/documentos") },
+      ],
+    },
+    {
+      title: "Clientes",
+      icon: require("../assets/clientes.png"),
+      actions: [
+        { label: "Pesquisar", onPress: () => alert("Pesquisar clientes") },
+        { label: "Cadastrar", onPress: () => router.push("/clientes") },
+      ],
+    },
+    {
+      title: "Processos",
+      icon: require("../assets/processos.png"),
+      actions: [
+        { label: "Visualizar", onPress: () => alert("Visualizar processos") },
+        { label: "Cadastrar", onPress: () => alert("Cadastrar processo") },
+      ],
+    },
+    {
+      title: "Pendências",
+      icon: require("../assets/pendencias.png"),
+      actions: [
+        { label: "Visualizar", onPress: () => alert("Visualizar pendências") },
+        { label: "Cadastrar", onPress: () => alert("Cadastrar pendência") },
+      ],
+    },
+  ];
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Header */}
+      {/* Header com Logo e Título */}
       <View style={styles.header}>
-        <Image source={require("../assets/logo.png")} style={styles.logo} />
+        <Image
+          source={require("../assets/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>Process Doc</Text>
       </View>
 
-      {/* Grade com os 4 blocos */}
-      <View style={styles.row}>
-        {/* Documentos */}
-        <View style={styles.card}>
-          <Image source={require("../assets/doc.png")} style={styles.icon} />
-          <Text style={styles.cardTitle}>Documentos</Text>
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => alert("Visualizar documentos")}
-            >
-              <Text style={styles.buttonText}>Visualizar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => router.push("/documentos")}
-            >
-              <Text style={styles.buttonText}>Cadastrar</Text>
-            </TouchableOpacity>
+      {/* Grade de Cards */}
+      <View style={styles.grid}>
+        {cardData.map((card, index) => (
+          <View key={index} style={styles.card}>
+            <Image source={card.icon} style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>{card.title}</Text>
+            <View style={styles.buttonGroup}>
+              {card.actions.map((action, actionIndex) => (
+                <TouchableOpacity
+                  key={actionIndex}
+                  style={styles.button}
+                  onPress={action.onPress}
+                >
+                  <Text style={styles.buttonText}>{action.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-
-        {/* Clientes */}
-        <View style={styles.card}>
-          <Image source={require("../assets/clientes.png")} style={styles.icon} />
-          <Text style={styles.cardTitle}>Clientes</Text>
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => alert("Pesquisar clientes")}
-            >
-              <Text style={styles.buttonText}>Pesquisar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => router.push("/clientes")}
-            >
-              <Text style={styles.buttonText}>Cadastrar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.row}>
-        {/* Processos */}
-        <View style={styles.card}>
-          <Image source={require("../assets/processos.png")} style={styles.icon} />
-          <Text style={styles.cardTitle}>Processos</Text>
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => alert("Visualizar processos")}
-            >
-              <Text style={styles.buttonText}>Visualizar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => alert("Cadastrar processo")}
-            >
-              <Text style={styles.buttonText}>Cadastrar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Pendências */}
-        <View style={styles.card}>
-          <Image source={require("../assets/pendencias.png")} style={styles.icon} />
-          <Text style={styles.cardTitle}>Pendências</Text>
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => alert("Visualizar pendências")}
-            >
-              <Text style={styles.buttonText}>Visualizar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => alert("Cadastrar pendência")}
-            >
-              <Text style={styles.buttonText}>Cadastrar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        ))}
       </View>
     </ScrollView>
   );
@@ -111,70 +87,70 @@ export default function InicioScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
+    backgroundColor: "#E0E7FF", // Fundo azul claro, igual ao login
     padding: 20,
-    backgroundColor: "#121212",
-    justifyContent: "flex-start",
   },
   header: {
-    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-    justifyContent: "center",
+    marginBottom: 30, // Mais espaço abaixo do header
   },
   logo: {
-    width: 40,
-    height: 40,
-    resizeMode: "contain",
-    position: "absolute",
-    left: 0,
-  },
-  title: {
-    fontSize: 20,
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  card: {
-    backgroundColor: "#1e1e1e",
-    borderRadius: 12,
-    padding: 15,
-    alignItems: "center",
-    width: "45%", // 2 blocos por linha
-  },
-  icon: {
-    width: 50,
+    width: 100,
     height: 50,
     marginBottom: 10,
-    resizeMode: "contain",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#0052CC", // Azul escuro para o título
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap", // Permite que os itens quebrem para a próxima linha
+    justifyContent: "space-between",
+  },
+  card: {
+    backgroundColor: "#FFFFFF", // Fundo branco para os cards
+    borderRadius: 15,
+    padding: 20,
+    alignItems: "center",
+    width: "48%", // Levemente menor que 50% para ter um espaço no meio
+    marginBottom: 20,
+    // Sombra para dar profundidade
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  cardIcon: {
+    width: 60,
+    height: 60,
+    marginBottom: 15,
   },
   cardTitle: {
-    fontSize: 14,
-    color: "#fff",
-    marginBottom: 10,
-    textAlign: "center",
+    fontSize: 16,
     fontWeight: "bold",
+    color: "#333", // Cor escura para o texto do card
+    marginBottom: 15,
   },
   buttonGroup: {
-    flexDirection: "column",
-    gap: 8,
+    width: "100%", // Faz o grupo de botões ocupar toda a largura do card
   },
   button: {
-    backgroundColor: "#007bff",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 8,
+    backgroundColor: "#007BFF", // Azul principal para os botões
+    paddingVertical: 10,
+    borderRadius: 10,
     alignItems: "center",
+    width: "100%",
+    marginBottom: 8, // Espaço entre os botões
   },
   buttonText: {
-    color: "#fff",
+    color: "#FFFFFF",
+    fontSize: 14,
     fontWeight: "bold",
-    fontSize: 12,
-    textTransform: "uppercase",
   },
 });

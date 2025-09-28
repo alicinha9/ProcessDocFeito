@@ -1,176 +1,386 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // ícones
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Alert,
+  Dimensions,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+
+const { width } = Dimensions.get("window");
 
 export default function DocumentosScreen() {
-  const clientesCadastrados = ['Alice', 'Bruno', 'Carlos'];
-  const tipos = ['CPF', 'Certidão', 'Identidade', 'Endereço', 'Intimação', 'Todos'];
+  const router = useRouter();
+  const clientesCadastrados = ["Alice", "Bruno", "Carlos"]; // Simulação
+  const tipos = ["CPF", "Certidão", "Identidade", "Endereço", "Intimação", "Todos"]; // Adicionado 'Todos'
+  const tiposDocumentos = ["CPF", "Certidão", "Identidade", "Endereço", "Intimação"]; // Tipos de documentos sem "Todos"
 
-  const [cliente, setCliente] = useState('');
+  const [cliente, setCliente] = useState("");
+  const [nomeDocumento, setNomeDocumento] = useState("");
+  const [numeroProcesso, setNumeroProcesso] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [tipo, setTipo] = useState('');
-  const [documentos, setDocumentos] = useState<{ [key: string]: string | null }>({});
+  const [tipoSelecionado, setTipoSelecionado] = useState("");
+  const [documentosAnexados, setDocumentosAnexados] = useState<{ [key: string]: string | null }>({});
 
   const buscarCliente = () => {
     const encontrado = clientesCadastrados.find(c => c.toLowerCase() === cliente.toLowerCase());
-    if (encontrado) Alert.alert('Cliente encontrado', `Cliente: ${encontrado}`);
-    else Alert.alert('Cliente não encontrado', 'Verifique o nome digitado');
+    if (encontrado) {
+      Alert.alert("Cliente encontrado", `Cliente: ${encontrado}`);
+    } else {
+      Alert.alert("Cliente não encontrado", "Verifique o nome digitado");
+    }
   };
 
   const anexarDocumento = (tipoDoc: string) => {
-    const nomeArquivo = prompt(`Simulação: insira o nome do arquivo para "${tipoDoc}":`);
-    if (nomeArquivo) setDocumentos(prev => ({ ...prev, [tipoDoc]: nomeArquivo }));
+    const nomeArquivo = prompt(`Insira a URL do arquivo para "${tipoDoc}":`);
+    if (nomeArquivo) {
+      setDocumentosAnexados(prev => ({ ...prev, [tipoDoc]: nomeArquivo }));
+    }
   };
 
-  const adicionarDocumentos = () => {
-    if (!cliente || !tipo) return Alert.alert('Erro', 'Selecione cliente e tipo de documentação!');
+  const handleCadastrarDocumento = () => {
+    if (!cliente || !nomeDocumento || !tipoSelecionado) {
+      Alert.alert("Erro", "Preencha todos os campos obrigatórios!");
+      return;
+    }
 
-    if (tipo === 'Todos') {
-      const todosTipos = tipos.filter(t => t !== 'Todos');
-      for (const t of todosTipos) if (!documentos[t]) return Alert.alert('Erro', `Anexe o documento: ${t}`);
-    } else if (!documentos[tipo]) return Alert.alert('Erro', `Anexe o documento: ${tipo}`);
-
-    console.log('Documentos adicionados:', { cliente, tipo, documentos });
-    Alert.alert('Sucesso', 'Documentos adicionados com sucesso!');
-    setCliente('');
-    setTipo('');
-    setDocumentos({});
-    setDropdownOpen(false);
+    // Lógica para cadastrar o documento
+    console.log("Dados do documento:", {
+      cliente,
+      nomeDocumento,
+      numeroProcesso,
+      tipoSelecionado,
+      documentosAnexados,
+    });
+    Alert.alert("Sucesso", "Documento cadastrado com sucesso!");
+    // router.push("/inicio"); // Redirecionar após o cadastro
   };
 
-  const tiposParaAnexar = tipo === 'Todos' ? tipos.filter(t => t !== 'Todos') : tipo ? [tipo] : [];
-
-  const icones: { [key: string]: React.ComponentProps<typeof MaterialCommunityIcons>['name'] } = {
-    CPF: 'card-account-details',
-    'Certidão': 'file-document',
-    Identidade: 'account-box',
-    Endereço: 'home-city',
-    Intimação: 'alert',
+  const icones: { [key: string]: React.ComponentProps<typeof MaterialCommunityIcons>["name"] } = {
+    CPF: "card-account-details",
+    Certidão: "file-document",
+    Identidade: "account-box",
+    Endereço: "home-city",
+    Intimação: "alert",
   };
+
+  // Função para determinar quais botões mostrar
+  const getBotoesParaMostrar = () => {
+    if (tipoSelecionado === "Todos") {
+      return tiposDocumentos; // Mostra todos os tipos de documentos
+    } else if (tipoSelecionado && tipoSelecionado !== "Todos") {
+      return [tipoSelecionado]; // Mostra apenas o tipo selecionado
+    }
+    return []; // Não mostra nenhum botão se nada estiver selecionado
+  };
+
+  const botoesParaMostrar = getBotoesParaMostrar();
+  const isTodosSelected = tipoSelecionado === "Todos";
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Adicionar Documentos</Text>
-
-      {/* Cliente */}
-      <Text style={styles.label}>Cliente</Text>
-      <View style={styles.row}>
-        <TextInput
-          style={[styles.input, { flex: 1 }]}
-          placeholder="Digite o nome do cliente"
-          placeholderTextColor="#888"
-          value={cliente}
-          onChangeText={setCliente}
-        />
-        <TouchableOpacity style={styles.searchButton} onPress={buscarCliente}>
-          <Text style={styles.searchButtonText}>🔍</Text>
+    <View style={styles.fullContainer}>
+      {/* Header */} 
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color="#007BFF" />
         </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Image
+            source={require("../assets/logo.png")}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>Process Doc</Text>
+        </View>
       </View>
 
-      {/* Dropdown Tipo */}
-      <Text style={styles.label}>Tipo de Documentação</Text>
-      <TouchableOpacity
-        style={styles.dropdown}
-        onPress={() => setDropdownOpen(!dropdownOpen)}
-      >
-        <Text style={{ color: tipo ? '#fff' : '#888' }}>{tipo || 'Selecione o tipo'}</Text>
-      </TouchableOpacity>
-      {dropdownOpen && (
-        <View style={styles.dropdownList}>
-          {tipos.map(t => (
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.formCard}>
+          <Text style={styles.title}>Cadastro de Documento</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Cliente</Text>
+            <View style={styles.rowInputWithButton}>
+              <TextInput
+                style={styles.input}
+                placeholder="Digite o nome do cliente"
+                placeholderTextColor="#888"
+                value={cliente}
+                onChangeText={setCliente}
+              />
+              <TouchableOpacity style={styles.searchButton} onPress={buscarCliente}>
+                <Feather name="search" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Nome do Documento</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: Contrato Social, Procuração"
+              placeholderTextColor="#888"
+              value={nomeDocumento}
+              onChangeText={setNomeDocumento}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Número do Processo (Opcional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Número do processo associado"
+              placeholderTextColor="#888"
+              value={numeroProcesso}
+              onChangeText={setNumeroProcesso}
+            />
+          </View>
+
+          {/* Dropdown Tipo de Documentação */} 
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Tipo de Documentação</Text>
             <TouchableOpacity
-              key={t}
-              style={styles.dropdownItem}
-              onPress={() => { setTipo(t); setDropdownOpen(false); }}
+              style={styles.dropdown}
+              onPress={() => setDropdownOpen(!dropdownOpen)}
             >
-              <Text style={styles.dropdownItemText}>{t}</Text>
+              <Text style={{ color: tipoSelecionado ? "#333" : "#888" }}>
+                {tipoSelecionado || "Selecione o tipo"}
+              </Text>
+              <Feather name="chevron-down" size={20} color="#888" />
             </TouchableOpacity>
-          ))}
+            {dropdownOpen && (
+              <View style={styles.dropdownList}>
+                {tipos.map(t => (
+                  <TouchableOpacity
+                    key={t}
+                    style={styles.dropdownItem}
+                    onPress={() => { setTipoSelecionado(t); setDropdownOpen(false); }}
+                  >
+                    <Text style={styles.dropdownItemText}>{t}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Botões de Anexar Documentos - Condicionais */} 
+          {botoesParaMostrar.length > 0 && (
+            <View style={[
+              styles.attachmentButtonsContainer,
+              isTodosSelected && styles.attachmentButtonsContainerGrid
+            ]}>
+              {botoesParaMostrar.map(t => (
+                <TouchableOpacity
+                  key={t}
+                  style={[
+                    styles.anexarButton,
+                    isTodosSelected && styles.anexarButtonSmall,
+                    documentosAnexados[t] && styles.anexarButtonAttached
+                  ]}
+                  onPress={() => anexarDocumento(t)}
+                >
+                  <MaterialCommunityIcons 
+                    name={icones[t] || "file-document-outline"} 
+                    size={isTodosSelected ? 16 : 20} 
+                    color="#FFFFFF" 
+                    style={{ marginRight: isTodosSelected ? 4 : 8 }} 
+                  />
+                  <Text style={[
+                    styles.anexarButtonText,
+                    isTodosSelected && styles.anexarButtonTextSmall
+                  ]}>
+                    {documentosAnexados[t] ? `${t} ✅` : `${t}`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Botão Cadastrar Documento */} 
+          <TouchableOpacity style={styles.submitButton} onPress={handleCadastrarDocumento}>
+            <Text style={styles.submitButtonText}>Cadastrar Documento</Text>
+          </TouchableOpacity>
         </View>
-      )}
-
-      {/* Botões de anexar documentos */}
-      {tiposParaAnexar.map(t => (
-        <TouchableOpacity
-          key={t}
-          style={[styles.anexarButton, documentos[t] && styles.anexarButtonAttached]}
-          onPress={() => anexarDocumento(t)}
-        >
-          <MaterialCommunityIcons name={icones[t] || 'file'} size={20} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.anexarButtonText}>
-            {documentos[t] ? `${t} anexado ✅` : `Anexar ${t}`}
-          </Text>
-        </TouchableOpacity>
-      ))}
-
-      {/* Botão adicionar */}
-      <TouchableOpacity style={styles.submitButton} onPress={adicionarDocumentos}>
-        <Text style={styles.submitButtonText}>Adicionar Documentos</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  fullContainer: {
+    flex: 1,
+    backgroundColor: "#E0F2F7", // Fundo azul claro
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#FFFFFF", // Fundo branco para o header
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+    paddingTop: 40, // Ajuste para status bar
+  },
+  backButton: {
+    paddingRight: 10,
+  },
+  headerTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 34, // Compensar o botão de voltar para centralizar
+  },
+  headerLogo: {
+    width: 30,
+    height: 30,
+    marginRight: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#007BFF",
+  },
+  scrollContainer: {
     flexGrow: 1,
-    padding: 25,
-    backgroundColor: '#000',
-    alignItems: 'center',
+    alignItems: "center",
+    paddingVertical: 20,
   },
-  title: { fontSize: 28, fontWeight: '700', color: '#fff', marginBottom: 25 },
-  label: { alignSelf: 'flex-start', fontSize: 16, color: '#fff', marginBottom: 5, marginTop: 15 },
-  row: { flexDirection: 'row', width: '100%', alignItems: 'center', marginBottom: 10 },
+  formCard: {
+    width: width * 0.9, // 90% da largura da tela para um visual mais compacto
+    maxWidth: 600, // Limite máximo para telas maiores, mantendo-o "quadriculado"
+    backgroundColor: "#FFFFFF",
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#007BFF",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  inputGroup: {
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 5,
+    fontWeight: "500",
+  },
+  rowInputWithButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   input: {
-    backgroundColor: '#1c1c1c',
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    backgroundColor: "#F9F9F9",
     padding: 12,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#333',
+    color: "#333",
     fontSize: 16,
-    color: '#fff',
-    marginRight: 10,
   },
-  searchButton: { backgroundColor: '#0d6efd', padding: 10, borderRadius: 8 },
-  searchButtonText: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  dropdown: {
-    width: '100%',
+  searchButton: {
+    backgroundColor: "#007BFF",
     padding: 12,
-    backgroundColor: '#1c1c1c',
     borderRadius: 8,
+    marginLeft: 10,
+  },
+  dropdown: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#333',
-    marginBottom: 10,
+    borderColor: "#E0E0E0",
+    backgroundColor: "#F9F9F9",
+    padding: 12,
+    borderRadius: 8,
+    position: "relative", // Adicionado para que o zIndex funcione corretamente
+    zIndex: 1, // Garante que o dropdown base esteja acima dos elementos abaixo dele
   },
   dropdownList: {
-    width: '100%',
-    backgroundColor: '#1c1c1c',
-    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#333',
-    marginBottom: 10,
+    borderColor: "#E0E0E0",
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    marginTop: 5,
+    position: "absolute",
+    width: "100%",
+    zIndex: 1000, // Aumentado para garantir que o dropdown fique acima de outros elementos
+    top: "100%", // Posiciona o dropdown logo abaixo do botão
   },
-  dropdownItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: '#333' },
-  dropdownItemText: { color: '#fff' },
+  dropdownItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  dropdownItemText: {
+    color: "#333",
+    fontSize: 16,
+  },
+  attachmentButtonsContainer: {
+    flexDirection: "column", // Padrão: coluna para um botão
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  attachmentButtonsContainerGrid: {
+    flexDirection: "row", // Grid para múltiplos botões pequenos
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
   anexarButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    backgroundColor: '#198754',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#007BFF",
     paddingVertical: 10,
+    paddingHorizontal: 15,
     borderRadius: 8,
     marginBottom: 10,
-    justifyContent: 'center',
+    width: "100%", // Botão grande ocupa largura total
+    justifyContent: "flex-start", // Alinha o conteúdo à esquerda
   },
-  anexarButtonAttached: { backgroundColor: '#0dcaf0' },
-  anexarButtonText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  anexarButtonSmall: {
+    width: "48%", // Botões pequenos ocupam ~48% da largura (2 por linha)
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    justifyContent: "center", // Centraliza o conteúdo nos botões pequenos
+  },
+  anexarButtonAttached: {
+    backgroundColor: "#28A745", // Verde para anexado
+  },
+  anexarButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  anexarButtonTextSmall: {
+    fontSize: 12, // Texto menor para botões pequenos
+  },
   submitButton: {
-    width: '100%',
-    backgroundColor: '#0d6efd',
-    paddingVertical: 14,
+    backgroundColor: "#007BFF",
+    padding: 15,
     borderRadius: 10,
-    marginTop: 15,
-    alignItems: 'center',
+    marginTop: 10,
+    alignItems: "center",
+    width: "100%",
   },
-  submitButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  submitButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
 });

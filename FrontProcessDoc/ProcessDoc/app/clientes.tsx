@@ -1,192 +1,252 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router'; // usando expo-router para navegação
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Alert,
+  Dimensions // Importa Dimensions para obter a largura da tela
+} from "react-native";
+import { useRouter } from "expo-router";
+import { Feather } from "@expo/vector-icons";
+import MaskInput, { Masks } from "react-native-mask-input";
+
+const { width } = Dimensions.get("window"); // Obtém a largura da tela
 
 export default function ClientesScreen() {
   const router = useRouter();
+  const [form, setForm] = useState({
+    nomeCompleto: "",
+    dataNascimento: "",
+    cpf: "",
+    endereco: "",
+    telefone: "",
+    processo: "",
+    // fotoUrl: "", // Removido o campo para a URL da foto
+  });
 
-  const [nome, setNome] = useState('');
-  const [dataNascimento, setDataNascimento] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [endereco, setEndereco] = useState('');
-  const [telefone, setTelefone] = useState('');
-  const [processo, setProcesso] = useState('');
-  const [foto, setFoto] = useState<string | null>(null);
-
-  const anexarFoto = () => {
-    const url = prompt('Insira a URL da foto do cliente:');
-    if (url) setFoto(url);
+  const handleChange = (field: string, value: string) => {
+    setForm({ ...form, [field]: value });
   };
 
-  const cadastrarCliente = () => {
-    if (!nome || !dataNascimento || !cpf || !endereco || !telefone || !processo) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos!');
-      return;
-    }
+  // Removida a função anexarFoto
 
-    const cliente = { nome, dataNascimento, cpf, endereco, telefone, processo, foto };
-    console.log('Cliente cadastrado:', cliente);
-    Alert.alert('Sucesso', 'Cliente cadastrado com sucesso!');
-
-    setNome('');
-    setDataNascimento('');
-    setCpf('');
-    setEndereco('');
-    setTelefone('');
-    setProcesso('');
-    setFoto(null);
+  const handleRegisterClient = () => {
+    // Lógica para registrar o cliente
+    console.log("Dados do cliente:", form);
+    Alert.alert("Sucesso", "Cliente cadastrado com sucesso!");
+    // router.push("/inicio"); // Redirecionar após o cadastro
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Botão de voltar */}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/inicio')}>
-        <Text style={styles.backButtonText}>🏠 Início</Text>
-      </TouchableOpacity>
+    <View style={styles.fullContainer}>
+      {/* Header */} 
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color="#007BFF" />
+        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Image
+            source={require("../assets/logo.png")}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>Process Doc</Text>
+        </View>
+      </View>
 
-      <Text style={styles.title}>Cadastro de Cliente</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.formCard}>
+          <Text style={styles.title}>Cadastro de Cliente</Text>
 
-      <Text style={styles.label}>Nome</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Digite o nome do cliente"
-        placeholderTextColor="#888"
-        value={nome}
-        onChangeText={setNome}
-      />
+          {/* Conteúdo do formulário agora ocupa a largura total */} 
+          <View style={styles.formFieldsContainerFullWidth}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Nome Completo</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Digite o nome do cliente"
+                placeholderTextColor="#888"
+                value={form.nomeCompleto}
+                onChangeText={(t) => handleChange("nomeCompleto", t)}
+              />
+            </View>
 
-      <Text style={styles.label}>Data de Nascimento</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="DD/MM/AAAA"
-        placeholderTextColor="#888"
-        value={dataNascimento}
-        onChangeText={setDataNascimento}
-      />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Data de Nascimento</Text>
+              <MaskInput
+                mask={Masks.DATE_DDMMYYYY}
+                style={styles.input}
+                placeholder="DD/MM/AAAA"
+                placeholderTextColor="#888"
+                keyboardType="numeric"
+                value={form.dataNascimento}
+                onChangeText={(masked) =>
+                  handleChange("dataNascimento", masked)
+                }
+              />
+            </View>
 
-      <Text style={styles.label}>CPF</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="000.000.000-00"
-        placeholderTextColor="#888"
-        value={cpf}
-        onChangeText={setCpf}
-      />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>CPF</Text>
+              <MaskInput
+                mask={Masks.BRL_CPF}
+                style={styles.input}
+                placeholder="000.000.000-00"
+                placeholderTextColor="#888"
+                keyboardType="numeric"
+                value={form.cpf}
+                onChangeText={(masked) => handleChange("cpf", masked)}
+              />
+            </View>
 
-      <Text style={styles.label}>Endereço</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Rua, número, bairro"
-        placeholderTextColor="#888"
-        value={endereco}
-        onChangeText={setEndereco}
-      />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Endereço</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Rua, número, bairro"
+                placeholderTextColor="#888"
+                value={form.endereco}
+                onChangeText={(t) => handleChange("endereco", t)}
+              />
+            </View>
 
-      <Text style={styles.label}>Telefone</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="(00) 00000-0000"
-        placeholderTextColor="#888"
-        value={telefone}
-        onChangeText={setTelefone}
-      />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Telefone</Text>
+              <MaskInput
+                mask={Masks.BRL_PHONE}
+                style={styles.input}
+                placeholder="(00) 00000-0000"
+                placeholderTextColor="#888"
+                keyboardType="phone-pad"
+                value={form.telefone}
+                onChangeText={(masked) =>
+                  handleChange("telefone", masked)
+                }
+              />
+            </View>
 
-      <Text style={styles.label}>Processo</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Número do processo"
-        placeholderTextColor="#888"
-        value={processo}
-        onChangeText={setProcesso}
-      />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Processo (Opcional)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Número do processo associado"
+                placeholderTextColor="#888"
+                value={form.processo}
+                onChangeText={(t) => handleChange("processo", t)}
+              />
+            </View>
+          </View>
 
-      <TouchableOpacity style={styles.fotoButton} onPress={anexarFoto}>
-        <Text style={styles.fotoButtonText}>Anexar Foto</Text>
-      </TouchableOpacity>
-
-      {foto && <Image source={{ uri: foto }} style={styles.foto} />}
-
-      <TouchableOpacity style={styles.submitButton} onPress={cadastrarCliente}>
-        <Text style={styles.submitButtonText}>Cadastrar Cliente</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          {/* Botão de Cadastrar Cliente */} 
+          <TouchableOpacity
+            style={styles.registerButton}
+            onPress={handleRegisterClient}
+          >
+            <Text style={styles.registerButtonText}>Cadastrar Cliente</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 30,
-    backgroundColor: '#000', // fundo preto
-    alignItems: 'center',
+  fullContainer: {
+    flex: 1,
+    backgroundColor: "#E0F2F7", // Fundo azul claro
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#FFFFFF", // Fundo branco para o header
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+    paddingTop: 40, // Ajuste para status bar
   },
   backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 20,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#333',
-    borderRadius: 6,
+    paddingRight: 10,
   },
-  backButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16,
+  headerTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 34, // Compensar o botão de voltar para centralizar
+  },
+  headerLogo: {
+    width: 30,
+    height: 30,
+    marginRight: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#007BFF",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    alignItems: "center",
+    paddingVertical: 20,
+  },
+  formCard: {
+    width: width * 0.9, // 90% da largura da tela para um visual mais compacto
+    maxWidth: 600, // Limite máximo para telas maiores, mantendo-o "quadriculado"
+    backgroundColor: "#FFFFFF",
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 30,
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#007BFF",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  // Removido contentWrapper, pois não há mais duas colunas
+  formFieldsContainerFullWidth: {
+    width: "100%", // Ocupa a largura total do formCard
+  },
+  // Removido photoUploadContainer, profileImagePreview, profileImage, attachPhotoButton, attachPhotoButtonText
+  inputGroup: {
+    marginBottom: 15,
   },
   label: {
-    alignSelf: 'flex-start',
-    fontSize: 16,
-    color: '#fff',
+    fontSize: 14,
+    color: "#333",
     marginBottom: 5,
-    marginTop: 10,
+    fontWeight: "500",
   },
   input: {
-    width: '100%',
-    backgroundColor: '#1c1c1c',
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    backgroundColor: "#F9F9F9",
     padding: 12,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#333',
+    color: "#333",
     fontSize: 16,
-    color: '#fff',
   },
-  fotoButton: {
-    marginTop: 15,
-    marginBottom: 15,
-    backgroundColor: '#0d6efd',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  fotoButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  foto: {
-    width: 200,
-    height: 200,
+  registerButton: {
+    backgroundColor: "#007BFF",
+    padding: 15,
     borderRadius: 10,
-    marginBottom: 20,
-    marginTop: 5,
+    marginTop: 20,
+    alignItems: "center",
+    width: "100%", // Botão de largura total
   },
-  submitButton: {
-    width: '100%',
-    backgroundColor: '#198754',
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: '#fff',
+  registerButtonText: {
+    color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "bold",
+    textTransform: "uppercase",
   },
 });
