@@ -17,9 +17,9 @@ const { width } = Dimensions.get("window");
 
 export default function DocumentosScreen() {
   const router = useRouter();
-  const clientesCadastrados = ["Alice", "Bruno", "Carlos"]; // Simulação
-  const tipos = ["CPF", "Certidão", "Identidade", "Endereço", "Intimação", "Todos"]; // Adicionado 'Todos'
-  const tiposDocumentos = ["CPF", "Certidão", "Identidade", "Endereço", "Intimação"]; // Tipos de documentos sem "Todos"
+  const clientesCadastrados = ["Alice", "Bruno", "Carlos"];
+  const tipos = ["CPF", "Certidão", "Identidade", "Endereço", "Intimação", "Todos"];
+  const tiposDocumentos = ["CPF", "Certidão", "Identidade", "Endereço", "Intimação"];
 
   const [cliente, setCliente] = useState("");
   const [nomeDocumento, setNomeDocumento] = useState("");
@@ -49,8 +49,6 @@ export default function DocumentosScreen() {
       Alert.alert("Erro", "Preencha todos os campos obrigatórios!");
       return;
     }
-
-    // Lógica para cadastrar o documento
     console.log("Dados do documento:", {
       cliente,
       nomeDocumento,
@@ -59,7 +57,6 @@ export default function DocumentosScreen() {
       documentosAnexados,
     });
     Alert.alert("Sucesso", "Documento cadastrado com sucesso!");
-    // router.push("/inicio"); // Redirecionar após o cadastro
   };
 
   const icones: { [key: string]: React.ComponentProps<typeof MaterialCommunityIcons>["name"] } = {
@@ -70,14 +67,13 @@ export default function DocumentosScreen() {
     Intimação: "alert",
   };
 
-  // Função para determinar quais botões mostrar
   const getBotoesParaMostrar = () => {
     if (tipoSelecionado === "Todos") {
-      return tiposDocumentos; // Mostra todos os tipos de documentos
+      return tiposDocumentos;
     } else if (tipoSelecionado && tipoSelecionado !== "Todos") {
-      return [tipoSelecionado]; // Mostra apenas o tipo selecionado
+      return [tipoSelecionado];
     }
-    return []; // Não mostra nenhum botão se nada estiver selecionado
+    return [];
   };
 
   const botoesParaMostrar = getBotoesParaMostrar();
@@ -85,7 +81,6 @@ export default function DocumentosScreen() {
 
   return (
     <View style={styles.fullContainer}>
-      {/* Header */} 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Feather name="arrow-left" size={24} color="#007BFF" />
@@ -142,8 +137,8 @@ export default function DocumentosScreen() {
             />
           </View>
 
-          {/* Dropdown Tipo de Documentação */} 
-          <View style={styles.inputGroup}>
+          {/* Dropdown com z-index corrigido */}
+          <View style={[styles.inputGroup, { zIndex: dropdownOpen ? 9999 : 1 }]}>
             <Text style={styles.label}>Tipo de Documentação</Text>
             <TouchableOpacity
               style={styles.dropdown}
@@ -160,7 +155,10 @@ export default function DocumentosScreen() {
                   <TouchableOpacity
                     key={t}
                     style={styles.dropdownItem}
-                    onPress={() => { setTipoSelecionado(t); setDropdownOpen(false); }}
+                    onPress={() => { 
+                      setTipoSelecionado(t); 
+                      setDropdownOpen(false); 
+                    }}
                   >
                     <Text style={styles.dropdownItemText}>{t}</Text>
                   </TouchableOpacity>
@@ -169,7 +167,7 @@ export default function DocumentosScreen() {
             )}
           </View>
 
-          {/* Botões de Anexar Documentos - Condicionais */} 
+          {/* Botões condicionais */}
           {botoesParaMostrar.length > 0 && (
             <View style={[
               styles.attachmentButtonsContainer,
@@ -202,7 +200,6 @@ export default function DocumentosScreen() {
             </View>
           )}
 
-          {/* Botão Cadastrar Documento */} 
           <TouchableOpacity style={styles.submitButton} onPress={handleCadastrarDocumento}>
             <Text style={styles.submitButtonText}>Cadastrar Documento</Text>
           </TouchableOpacity>
@@ -215,16 +212,16 @@ export default function DocumentosScreen() {
 const styles = StyleSheet.create({
   fullContainer: {
     flex: 1,
-    backgroundColor: "#E0F2F7", // Fundo azul claro
+    backgroundColor: "#E0F2F7",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     padding: 15,
-    backgroundColor: "#FFFFFF", // Fundo branco para o header
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
-    paddingTop: 40, // Ajuste para status bar
+    paddingTop: 40,
   },
   backButton: {
     paddingRight: 10,
@@ -234,7 +231,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
-    marginRight: 34, // Compensar o botão de voltar para centralizar
+    marginRight: 34,
   },
   headerLogo: {
     width: 30,
@@ -252,8 +249,8 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   formCard: {
-    width: width * 0.9, // 90% da largura da tela para um visual mais compacto
-    maxWidth: 600, // Limite máximo para telas maiores, mantendo-o "quadriculado"
+    width: width * 0.9,
+    maxWidth: 600,
     backgroundColor: "#FFFFFF",
     borderRadius: 15,
     padding: 20,
@@ -272,6 +269,7 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 15,
+    position: "relative", // IMPORTANTE para o dropdown
   },
   label: {
     fontSize: 14,
@@ -308,36 +306,40 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9F9F9",
     padding: 12,
     borderRadius: 8,
-    position: "relative", // Adicionado para que o zIndex funcione corretamente
-    zIndex: 1, // Garante que o dropdown base esteja acima dos elementos abaixo dele
   },
   dropdownList: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    right: 0,
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E0E0E0",
     borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    marginTop: 5,
-    position: "absolute",
-    width: "100%",
-    zIndex: 1000, // Aumentado para garantir que o dropdown fique acima de outros elementos
-    top: "100%", // Posiciona o dropdown logo abaixo do botão
+    marginTop: 2,
+    zIndex: 10000, // Z-index alto
+    elevation: 10, // Para Android
+    shadowColor: "#000", // Para iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   dropdownItem: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    borderBottomColor: "#F0F0F0",
   },
   dropdownItemText: {
     color: "#333",
     fontSize: 16,
   },
   attachmentButtonsContainer: {
-    flexDirection: "column", // Padrão: coluna para um botão
+    flexDirection: "column",
     marginTop: 10,
     marginBottom: 20,
   },
   attachmentButtonsContainerGrid: {
-    flexDirection: "row", // Grid para múltiplos botões pequenos
+    flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
@@ -349,17 +351,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 8,
     marginBottom: 10,
-    width: "100%", // Botão grande ocupa largura total
-    justifyContent: "flex-start", // Alinha o conteúdo à esquerda
+    width: "100%",
+    justifyContent: "flex-start",
   },
   anexarButtonSmall: {
-    width: "48%", // Botões pequenos ocupam ~48% da largura (2 por linha)
+    width: "48%",
     paddingVertical: 8,
     paddingHorizontal: 10,
-    justifyContent: "center", // Centraliza o conteúdo nos botões pequenos
+    justifyContent: "center",
   },
   anexarButtonAttached: {
-    backgroundColor: "#28A745", // Verde para anexado
+    backgroundColor: "#28A745",
   },
   anexarButtonText: {
     color: "#FFFFFF",
@@ -367,7 +369,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   anexarButtonTextSmall: {
-    fontSize: 12, // Texto menor para botões pequenos
+    fontSize: 12,
   },
   submitButton: {
     backgroundColor: "#007BFF",
